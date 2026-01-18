@@ -48,7 +48,7 @@ The project is designed to be:
 ## 3. Execution Flow
 
 ### 3.1 Application Startup
-1. Entry point is launched (`fixed_main.py`, `enhanced_trainer.py`, or via launcher).
+1. Entry point is launched (`fixed_main.py`, `main.py`, or via launcher).
 2. Camera is initialized using OpenCV.
 3. Pose detector and exercise analyzer are created.
 4. User selects an exercise (enhanced mode) or starts directly (simple mode).
@@ -151,7 +151,7 @@ The project is designed to be:
 ai_fitness_trainer/
 │
 ├── fixed_main.py            # Simple desktop trainer
-├── enhanced_trainer.py      # Advanced trainer with UI & analytics
+├── main.py                     # Advanced trainer with UI & analytics
 ├── report_manager.py        # Workout persistence logic
 ├── workout_data/            # Saved workout sessions
 │   └── sessions.json

@@ -1,232 +1,196 @@
-# 🏋️‍♂️ AI Fitness Trainer with Real-Time Pose Estimation
+# AI Fitness Trainer with Real-Time Pose Estimation
 
-An intelligent AI-powered fitness trainer that uses **Computer Vision**, **MediaPipe**, and **OpenCV** to provide real-time posture feedback, count exercise repetitions, and track progress — all through a simple webcam.  
-This project aims to make at-home fitness training more accessible, interactive, and accurate.
+An intelligent computer vision application that leverages **MediaPipe** and **OpenCV** to analyze human exercise form in real-time. This system provides live feedback, repetition counting, form correction, and workout session tracking, making fitness training more accessible and data-driven.
 
----
-
-## ✨ Features
-
-- **Real-time Pose Detection** using MediaPipe (33 body landmarks)
-- **Exercise Form Analysis** with angle-based posture validation
-- **Repetition Counting** for multiple exercises
-- **Audio Feedback** for correction & guidance
-- **Web Dashboard Support** using Streamlit
-- **Lightweight & CPU-friendly** (no GPU required)
-- **Extensible Exercise Modules**
-
-Supported exercise categories include:
-
-✔ Bicep curls  
-✔ Squats  
-✔ Push-ups  
-✔ Shoulder press  
-✔ Extendable for more exercises
+Designed with modularity and extensibility in mind, this project serves as a comprehensive resource for developers, students, and researchers interested in the intersection of AI, computer vision, and fitness technology.
 
 ---
 
-## 🎥 Demo
+## Key Features
 
-### 📸 Screenshots
+* **Real-time Pose Detection:** Utilizes MediaPipe to track 33 body landmarks with high precision.
+* **Exercise Form Analysis:** Calculates joint angles to validate posture and movement quality.
+* **Automatic Repetition Counting:** Logic-driven counting for dynamic exercises based on flexion/extension states.
+* **Time-based Tracking:** Duration monitoring for static isometric exercises (e.g., Plank).
+* **Calorie Estimation:** Metrics based on exercise intensity and duration.
+* **Data Persistence:** Workout sessions are automatically serialized and stored in JSON format for historical analysis.
+* **Dual Interfaces:** Includes both a lightweight Desktop OpenCV interface and a web-based Streamlit dashboard.
+* **Resource Efficient:** Optimized for CPU performance; no dedicated GPU is required.
 
-#### 🏠 Home Page
-![Home Page](Screenshots/home.png)
+### Supported Exercises
 
-#### 💪 Bicep Curls Mode
-![Bicep Curls](Screenshots/bicep.png)
+The system currently supports analysis for the following exercises, each with dedicated form validation logic:
 
-#### 🏋️ Squats Mode
-![Squats](Screenshots/squat.png)
+* **Bicep Curls:** Analysis of elbow flexion and extension.
+* **Squats:** Tracking of hip and knee flexion depth.
+* **Push-ups:** Measurement of chest depth and body alignment.
+* **Shoulder Press:** Analysis of vertical arm movement and symmetry.
+* **Lunges:** Validation of lower body stability and knee angles.
+* **Plank:** Monitoring of core stability and spinal alignment (Time-based).
 
-#### 🤸 Push-ups Mode
-![Push-ups](Screenshots/pushup.png)
+---
 
-### 🎬 GIF / Video
-(Add a GIF or video link here)
+## System Overview
 
+1. **Pose Detection:** Captures the live video feed and maps 33 distinct landmarks on the human body.
+2. **Movement Analysis:** Computes the geometric angles between specific joints to determine body state.
+3. **Form Validation:** Compares calculated angles against biomechanical thresholds to provide feedback (e.g., "Keep your back straight").
+4. **Progress Tracking:** Manages state machines for repetition counting and calculates caloric burn.
+5. **Data Persistence:** Aggregates session statistics and saves them for long-term progress tracking.
 
-> Tip: You can record a short demo video and upload it to YouTube/Drive and paste the link here.
+---
 
-## 🚀 Quick Start
+## Target Audience
 
-### **1. Clone the Repository**
+* **Developers:** Those exploring real-time computer vision applications.
+* **Students:** Individuals studying AI, kinematics, or software engineering.
+* **Contributors:** Open-source enthusiasts looking for a modular codebase to extend.
+* **Fitness Enthusiasts:** Users seeking objective analysis of their workout form.
 
+---
+
+## Quick Start
+
+### Prerequisites
+
+* **Python:** Version 3.8 or higher
+* **Hardware:** Standard 720p webcam
+* **OS:** Windows, Linux, or macOS
+
+### Installation
+
+1. **Clone the Repository**
 ```bash
 git clone https://github.com/PathakAman66/ai-fitness-trainer.git
 cd ai-fitness-trainer
+
 ```
 
-### **2. Install Dependencies**
 
-Recommended installation:
-
+2. **Install Dependencies**
 ```bash
-pip install -r requirements.txt
+# Recommended installation
+pip install -r config/requirements.txt
+
+# Manual installation
+pip install mediapipe opencv-python numpy streamlit matplotlib
+
 ```
 
-If this fails, fallback:
 
+3. **Verify Setup**
+Run the simple test script to ensure the camera and libraries are functioning correctly.
 ```bash
-pip install mediapipe opencv-python numpy streamlit pyttsx3
+python3 backend/tests/dependency_test.py
+
 ```
+
+
 
 ---
 
-## 🏃‍♂️ Running the Fitness Trainer
+## Usage Guide
 
-### **Option A — Webcam Fitness Trainer (OpenCV)**
+### Option A: Desktop Application (Recommended)
+
+This version runs locally using OpenCV windows and offers the best performance.
 
 ```bash
-python core/run_fitness_trainer.py
+# Launch the main application (6 exercises + analytics)
+python3 backend/core/main.py
+
 ```
 
-This launches the webcam and starts pose detection, rep counting, and feedback.
+### Option B: Web Interface
+
+A browser-based dashboard powered by Streamlit.
+
+```bash
+# Run Streamlit interface
+streamlit run frontend/web/streamlit_interface.py
+
+```
+
+*Access the interface at: `http://localhost:8501*`
 
 ---
 
-## 🌐 Running the Web Dashboard
+## Technical Details
 
-This provides a more interactive UI for exercise monitoring.
+### Exercise Detection Logic
 
-### **Step 1 — Launch Web App**
+| Exercise | Detection Method | Key Measurements |
+| --- | --- | --- |
+| **Bicep Curl** | Elbow Angle | Shoulder → Elbow → Wrist angle |
+| **Squat** | Hip/Knee Flexion | Hip → Knee → Ankle angle |
+| **Push-up** | Chest Depth | Shoulder → Elbow angle + Spine alignment |
+| **Shoulder Press** | Vertical Motion | Wrist → Elbow → Shoulder trajectory |
+| **Lunge** | Leg Coordination | Bilateral knee and hip angles |
+| **Plank** | Body Alignment | Shoulder → Hip → Ankle linearity |
 
-```bash
-python web/run_website.py
-```
-
-### **Step 2 — Open in Browser**
-
-Default Streamlit URL:
-
-```
-http://localhost:8501
-```
-
-Features include:
-
-✔ Camera feed  
-✔ Exercise selection  
-✔ Real-time feedback overlay  
-✔ Progress display  
-
----
-
-## 🌍 Alternative HTML Web Server
-
-If Streamlit is not preferred:
-
-```bash
-python web/web_server.py
-```
-
-This exposes an HTML interface via a lightweight server.
-
----
-
-## 🧱 Project Structure
+### Project Structure
 
 ```text
 ai-fitness-trainer/
 │
-├── core/                      # Core AI & fitness logic
-│   ├── enhanced_trainer.py
-│   ├── fixed_main.py
-│   └── run_fitness_trainer.py
+├── backend/                   # Application Logic
+│  
+│   ├── core/                  # Core AI algorithms
+│   │   ├── main.py            # Primary application loop
+│   ├── utils/                 # Utilities (Data storage, helpers)
+│   ├── data/                  # JSON report storage
+│   └── tests/                 # Unit and integration tests
 │
-├── web/                       # Web interfaces & dashboards
-│   ├── web_interface.py
-│   ├── simple_web.py
-│   ├── launch_web.py
-│   └── progress_dashboard.py
+├── frontend/                  # User Interface
+│   ├── streamlit_app.py       # Streamlit application files
+│   ├── web/               # HTML/CSS landing pages
+│   └── assets/                # Images and static resources
 │
-├── scripts/                   # Setup & automation scripts
-│   ├── clean_setup.py
-│   ├── create_structure.py
-│   ├── create_web_files.py
-│   ├── install_dependencies.py
-│   ├── install_web_dependencies.py
-│   ├── fix_installation.ps1
-│   └── install_and_run.bat
-│
-├── tests/                     # Test and validation files
-│   ├── simple_test.py
-│   └── test_setup.py
-│
-├── requirements/              # Dependency files
-│   ├── requirements.txt
-│   └── requirements-simple.txt
-│
-├── run.py                     # Main entry point
-├── setup.py                   # Packaging/build
-├── CODE_OF_CONDUCT.md
-└── README.md
+├── config/                    # Configuration and requirements
+└── docs/                      # Documentation and guidelines
+
 ```
 
 ---
 
-## 📊 Exercise Detection Logic (Overview)
+## Extending the System
 
-| Exercise | Detection Metric | Key Angle |
-|---|---|---|
-| Bicep Curl | Elbow flexion | Shoulder → Elbow → Wrist |
-| Squat | Hip/Knee flexion | Shoulder → Hip → Knee |
-| Push-up | Chest vertical depth | Shoulder → Elbow |
-| Shoulder Press | Vertical motion | Wrist → Elbow → Shoulder |
+The codebase is designed to be modular. To add a new exercise:
 
----
+1. **Define Logic:** Create a new analysis function in `Core/main.py`.
+```python
+def analyze_new_exercise(self, key_points):
+    # Extract coordinates
+    shoulder = key_points.get('right_shoulder')
+    # Calculate angles
+    # Return stage and counter
 
-## 🧪 Testing
-
-Run tests to verify environment:
-
-```bash
-python tests/test_setup.py
 ```
 
-Or minimal test:
 
-```bash
-python tests/simple_test.py
-```
+2. **Register Exercise:** Add the new key-value pair to the `EXERCISES` dictionary.
+3. **Update UI:** Ensure the new exercise appears in the selection menu.
 
 ---
 
-## 📦 Requirements
+## Contributing
 
-- **Python:** 3.8+
-- **Camera:** Any 720p webcam
-- **OS:** Windows / Linux / macOS
-- **CPU:** Runs without GPU
+Contributions are welcome. Please refer to `docs/CONTRIBUTING.md`  and for detailed guidelines. We are specifically looking for:
 
-Optional performance boost if GPU exists.
+* **New Exercise Modules:** Logic for additional exercises.
+* **Algorithm Optimization:** Improving the accuracy of pose detection.
+* **UI/UX Improvements:** Enhancements to the Streamlit dashboard.
+* **Analytics:** Advanced data visualization for workout history.
 
----
+### Workflow
 
-## 🧩 Extending the System
-
-New exercises can be added by:
-
-1. Adding angle logic in `core/`
-2. Registering exercise in trainer
-3. Updating web UI for exercise selection
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature/NewFeature`).
+3. Commit changes and ensure tests pass.
+4. Submit a Pull Request.
 
 ---
 
-## 🤝 Contributing
+## License
 
-We welcome contributions including:
-
-- New exercise models
-- Pose detection improvements
-- UI enhancements
-- Documentation
-- Bug fixes
-
-Refer to `CONTRIBUTING.md` for contribution flow.
-
----
-
-## ⭐ Show Support
-
-If this project helped you, consider giving it a ⭐ on GitHub to support development!
-
+This project is open-source and licensed under the **MIT License**.
