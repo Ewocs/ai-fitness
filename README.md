@@ -116,14 +116,20 @@ uvicorn backend.api.main:app --reload --host 0.0.0.0 --port 8000
 
 ### Option C: Web Interface (Streamlit)
 
-A browser-based dashboard powered by Streamlit.
+A modern, multi-page browser-based dashboard powered by Streamlit.
 
 ```bash
 # Run Streamlit interface
-streamlit run frontend/streamlit_interface.py
+streamlit run frontend/streamlit_interface/app.py
 ```
 
 *Access the interface at: `http://localhost:8501`*
+
+**Features:**
+- Multi-page navigation (Home, Workout, History, Stats)
+- Real-time workout sessions with quality feedback
+- Workout history with filtering and statistics
+- Responsive design with dark mode support
 
 ---
 
@@ -151,6 +157,7 @@ ai-fitness-trainer/
 │   │   ├── models.py         # Pydantic data models
 │   │   ├── pose_detector.py  # Pose detection service
 │   │   ├── exercise_analyzer.py  # Exercise analysis service
+│   │   ├── pose_quality_evaluator.py  # Form quality scoring
 │   │   ├── workout_session.py    # Session management
 │   │   └── session_manager.py    # Session state manager
 │   │
@@ -167,7 +174,19 @@ ai-fitness-trainer/
 │       └── test_*.py         # Unit and integration tests
 │
 ├── frontend/                  # User Interfaces
-│   ├── streamlit_interface.py # Streamlit web dashboard
+│   ├── streamlit_interface/   # Modern Streamlit web app
+│   │   ├── app.py            # Main application entry
+│   │   ├── pages/            # Multi-page navigation
+│   │   │   ├── 1_Home.py    # Welcome page
+│   │   │   ├── 2_Workout.py # Live workout session
+│   │   │   ├── 3_History.py # Workout history
+│   │   │   └── 4_Stats.py   # Analytics dashboard
+│   │   ├── components/       # Reusable UI components
+│   │   ├── services/         # Business logic layer
+│   │   ├── styles/           # Theming and CSS
+│   │   ├── utils/            # Helper functions
+│   │   └── tests/            # Frontend tests
+│   │
 │   ├── web-interface/         # HTML/CSS landing pages
 │   └── assets/                # Images and static resources
 │
