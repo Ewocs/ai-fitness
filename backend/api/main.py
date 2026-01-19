@@ -23,7 +23,8 @@ from backend.api.models import (
     ErrorResponse,
     ExerciseType,
     SessionStatus,
-    ExerciseStage
+    ExerciseStage,
+    validate_session_id
 )
 
 # Import services and utilities
@@ -627,9 +628,19 @@ async def end_session(session_id: str):
     
     Raises:
         HTTPException: 404 if session not found
+        HTTPException: 400 if session_id is invalid
         HTTPException: 503 if session manager is not initialized
         HTTPException: 500 if ending session fails
     """
+    # Validate session ID format
+    try:
+        validate_session_id(session_id)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+    
     if session_manager is None:
         raise HTTPException(
             status_code=503,
@@ -689,9 +700,19 @@ async def reset_session(session_id: str):
         SessionResetResponse confirming the reset
     
     Raises:
+        HTTPException: 400 if session_id is invalid
         HTTPException: 404 if session not found
         HTTPException: 503 if session manager is not initialized
     """
+    # Validate session ID format
+    try:
+        validate_session_id(session_id)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+    
     if session_manager is None:
         raise HTTPException(
             status_code=503,
@@ -731,15 +752,28 @@ async def get_sessions(
     
     Args:
         user_id: Optional user ID to filter sessions
-        limit: Maximum number of sessions to return (default: 100)
-        offset: Number of sessions to skip for pagination (default: 0)
+        limit: Maximum number of sessions to return (default: 100, max: 1000)
+        offset: Number of sessions to skip for pagination (default: 0, min: 0)
     
     Returns:
         SessionListResponse with list of sessions and pagination info
     
     Raises:
+        HTTPException: 400 if parameters are invalid
         HTTPException: 503 if session manager is not initialized
     """
+    # Validate pagination parameters
+    if limit < 1 or limit > 1000:
+        raise HTTPException(
+            status_code=400,
+            detail="limit must be between 1 and 1000"
+        )
+    if offset < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="offset must be non-negative"
+        )
+    
     if session_manager is None:
         raise HTTPException(
             status_code=503,
@@ -813,9 +847,19 @@ async def get_session(session_id: str):
         SessionResponse with session details
     
     Raises:
+        HTTPException: 400 if session_id is invalid
         HTTPException: 404 if session not found
         HTTPException: 503 if session manager is not initialized
     """
+    # Validate session ID format
+    try:
+        validate_session_id(session_id)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+    
     if session_manager is None:
         raise HTTPException(
             status_code=503,

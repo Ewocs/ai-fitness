@@ -6,6 +6,47 @@ from pydantic import BaseModel, Field, field_validator
 from typing import Optional, Dict, List
 from uuid import UUID
 from enum import Enum
+import base64
+
+
+def validate_session_id(session_id: str) -> str:
+    """Validate and return session ID if it's a valid UUID"""
+    try:
+        UUID(session_id)
+        return session_id
+    except ValueError:
+        raise ValueError(f"Invalid session ID format: {session_id}. Must be a valid UUID")
+
+
+def validate_base64_image(image_data: str) -> str:
+    """Validate base64 encoded image data"""
+    if not image_data or len(image_data.strip()) == 0:
+        raise ValueError("Image data cannot be empty")
+    
+    # Remove data URI prefix if present
+    if ',' in image_data:
+        image_data = image_data.split(',', 1)[1]
+    
+    # Remove whitespace
+    image_data = image_data.strip()
+    
+    # Check if it's valid base64
+    try:
+        # Remove padding characters and check length is multiple of 4
+        image_data_no_padding = image_data.rstrip('=')
+        if len(image_data_no_padding) % 4 != 0:
+            raise ValueError("Invalid base64 string length")
+        
+        # Try to decode to validate
+        base64.b64decode(image_data)
+    except Exception:
+        raise ValueError("Invalid base64 encoded image data")
+    
+    # Check minimum size (very small images are likely corrupted)
+    if len(image_data) < 100:  # Base64 encoded 64x64 RGB image is about 12KB, so 100 chars is very small
+        raise ValueError("Image data appears to be too small or corrupted")
+    
+    return image_data
 
 
 # Enums for validation
@@ -43,9 +84,8 @@ class PoseDetectionRequest(BaseModel):
     @field_validator('image')
     @classmethod
     def validate_image(cls, v: str) -> str:
-        """Validate that image string is not empty"""
-        if not v or len(v.strip()) == 0:
-            raise ValueError("Image data cannot be empty")
+        """Validate that image string is valid base64"""
+        validate_base64_image(v)
         return v
 
 
@@ -70,6 +110,14 @@ class AnalysisRequest(BaseModel):
     key_points: Dict[str, List[float]] = Field(..., description="Body landmark coordinates from pose detection")
     image: Optional[str] = Field(default=None, description="Optional base64 encoded image for additional processing")
 
+    @field_validator('image')
+    @classmethod
+    def validate_optional_image(cls, v: Optional[str]) -> Optional[str]:
+        """Validate optional image if provided"""
+        if v is not None:
+            validate_base64_image(v)
+        return v
+
     @field_validator('session_id')
     @classmethod
     def validate_session_id(cls, v: str) -> str:
@@ -83,14 +131,45 @@ class AnalysisRequest(BaseModel):
     @field_validator('key_points')
     @classmethod
     def validate_key_points(cls, v: Dict[str, List[float]]) -> Dict[str, List[float]]:
-        """Validate key points structure"""
+        """Validate key points structure and coordinate ranges"""
         if not v:
             raise ValueError("key_points cannot be empty")
+        
+        # Expected joints for pose detection (MediaPipe pose landmarks)
+        expected_joints = {
+            'nose', 'left_eye_inner', 'left_eye', 'left_eye_outer', 'right_eye_inner', 'right_eye', 
+            'right_eye_outer', 'left_ear', 'right_ear', 'mouth_left', 'mouth_right', 'left_shoulder', 
+            'right_shoulder', 'left_elbow', 'right_elbow', 'left_wrist', 'right_wrist', 'left_pinky', 
+            'right_pinky', 'left_index', 'right_index', 'left_thumb', 'right_thumb', 'left_hip', 
+            'right_hip', 'left_knee', 'right_knee', 'left_ankle', 'right_ankle', 'left_heel', 
+            'right_heel', 'left_foot_index', 'right_foot_index'
+        }
         
         # Validate that each key point has 4 values [x, y, z, visibility]
         for joint, coords in v.items():
             if not isinstance(coords, list) or len(coords) != 4:
                 raise ValueError(f"Each key point must have exactly 4 values [x, y, z, visibility], got {len(coords)} for {joint}")
+            
+            x, y, z, visibility = coords
+            
+            # Validate coordinate types
+            if not all(isinstance(coord, (int, float)) for coord in coords):
+                raise ValueError(f"All coordinates must be numbers for {joint}")
+            
+            # Validate ranges (assuming normalized coordinates 0-1)
+            if not (0 <= x <= 1):
+                raise ValueError(f"X coordinate for {joint} must be between 0 and 1, got {x}")
+            if not (0 <= y <= 1):
+                raise ValueError(f"Y coordinate for {joint} must be between 0 and 1, got {y}")
+            if not (-1 <= z <= 1):  # Z can be negative for depth
+                raise ValueError(f"Z coordinate for {joint} must be between -1 and 1, got {z}")
+            if not (0 <= visibility <= 1):
+                raise ValueError(f"Visibility for {joint} must be between 0 and 1, got {visibility}")
+        
+        # Check for minimum required joints
+        present_joints = set(v.keys())
+        if len(present_joints) < 10:  # At least some basic joints should be present
+            raise ValueError(f"Too few joints detected. Expected at least 10, got {len(present_joints)}")
         
         return v
 
@@ -113,6 +192,14 @@ class SessionStartRequest(BaseModel):
     """Request model for starting a workout session"""
     exercise_type: ExerciseType = Field(..., description="Type of exercise for this session")
     user_id: Optional[str] = Field(default=None, description="Optional user identifier for tracking")
+
+    @field_validator('user_id')
+    @classmethod
+    def validate_user_id(cls, v: Optional[str]) -> Optional[str]:
+        """Validate user_id if provided"""
+        if v is not None and len(v.strip()) == 0:
+            raise ValueError("user_id cannot be empty if provided")
+        return v
 
 
 class SessionResponse(BaseModel):
